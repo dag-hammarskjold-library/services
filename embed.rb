@@ -1,52 +1,75 @@
+# encoding: utf-8
+
+# To do: Set 501 response for not implemented; 404 for not found; etc. Make some other parameters available.
+
 class Embed
   def self.call(env)
     req = Rack::Request.new(env)
+    #if req.params["format"]
+    #  Rack::Response.new(
+    #    "<h1>501 Not Implemented</h1><p>Responses are formatted as JSON only. There is no need to specify a format, as no other formats are implemented.</p>",
+    #    501,{'Content-Type' => 'text/html'}
+    #  )
+    #end
     case req.path
-    # The embed request can be for several different things: a community/collection scope, an item, or a set of existing search results. We need to find out which.
-    when /^\/handle\/\d+\/\d+$/
-      #handle to resolve, get some data and serialize it as JSON for the client to parse
-      param = req.path.split(/\/handle\//).last
-      handle = URI::encode(param)
-      solr_for_handle = "http://localhost:8080/solr/search/select?q=handle%3A#{handle}&start=0&rows=1&wt=json&indent=true"
-      #What am I?
-      # Item = resourcetype: 2
-      # Collection = resourcetype: 3
-      # Community = resourcetype: 4
-      search_response = open(solr_for_handle).read
-      if search_response
-        json = JSON.parse(search_response)
-        #Rack::Response.new(json["response"]["docs"].first["search.resourcetype"].to_s)
-        #else
-        resource_type = json["response"]["docs"].first["search.resourcetype"].to_s
-        solr_for_resource = "http://localhost:8080/solr/search/select?q="
-        generated_html = "<h3>#{json["response"]["docs"].first["dc.title"].first}</h3>"
-        case resource_type
-        when "2"
-          #item, we already have all of the data we need
-          Rack::Response.new(generated_html,200,{'Content-Type' => 'text/html'})
-        when "3"
-          #collection, let's find the first 10 rows belonging to location.coll:n
-          coll_search = "http://localhost:8080/solr/search/select?q=location.coll%3A#{json["response"]["docs"].first["search.resourceid"].to_s}&start=0&rows=10&wt=json&indent=true" 
-          coll_results = open(coll_search).read
-          coll_json = JSON.parse(coll_results)
-          coll_json["response"]["docs"].each do |doc|
-            generated_html += "<p>#{doc["dc.title"].first}</p>"
+    when /^\/dsoembed$/
+      if req.params["url"]
+        #url is the only required parameter; others are optional; json is the only supported format!
+        url = ''
+        if req.params["url"] =~ /(.*)\.un\.org\/handle\/(.*)/
+          url = req.params["url"]
+          maxwidth = 300
+          maxheight = 400
+          if req.params["maxwidth"]
+            if req.params["maxwidth"].to_i > 0
+              maxwidth = req.params["maxwidth"].to_i
+            end
           end
-          Rack::Response.new(generated_html,200,{'Content-Type' => 'text/html'})
-        when "4"
-          #community, let's find the first 10 rows belonging to location.comm:n
-          comm_search = "http://localhost:8080/solr/search/select?q=location.comm%3A#{json["response"]["docs"].first["search.resourceid"].to_s}&start=0&rows=10&wt=json&indent=true" 
-          comm_results = open(comm_search).read
-          comm_json = JSON.parse(comm_results)
-          comm_json["response"]["docs"].each do |doc|
-            generated_html += "<p>#{doc["dc.title"].first}</p>"
+          if req.params["maxheight"]
+            if req.params["maxheight"].to_i > 0
+              maxheight = req.params["maxheight"].to_i
+            end
           end
-          Rack::Response.new(generated_html,200,{'Content-Type' => 'text/html'})
+          format = { :name => 'json', :mimetype => 'application/json' }
+          handle = url.split(/\/handle\//).last
+          embed_src_url = "http://dag.un.org/dsoembed/embed/handle/#{handle}"
+          generated_html = '<iframe src="' + embed_src_url + '" frameborder="0" style="top: 0px;left: 0px; width: ' + maxwidth.to_s + '; height: ' + maxheight.to_s + '; position: absolute;"></iframe>'
+        
+          response = {
+            "url" => "#{url}",
+            "type" => "rich",
+            "provider_name" => "United Nations Dag Hammarskjöld Library",
+            "provider_url" => "http://dag.un.org",
+            "html" => "#{generated_html}",
+            "width" => "#{maxwidth}",
+            "height" => "#{maxheight}"
+          }.to_json
+      
+          Rack::Response.new(response,200,{'Content-Type' => format[:mimetype]})
+      
+        else
+          Rack::Response.new("<h1>401 Not Authorized</h1><p>The URL you specified is not within the URL scheme supported by this service.</p>",401,{'Content-Type' => 'text/html'})
+        end
+      else
+        Rack::Response.new("<h1>400 Bad Request</h1><p>Required parameter 'url' is missing.</p>",400,{'Content-Type' => 'text/html'})
+      end
+    when /^\/dsoembed\/embed\/(.*)/
+      handle = req.path.split(/\/handle\//).last
+      solr_url_for_handle = $solr_prefix + handle + $solr_suffix
+      handle_response_json = JSON.parse(open(solr_url_for_handle).read)
+      generated_html = ''
+      
+      if handle_response_json["response"]["numFound"] && handle_response_json["response"]["numFound"].to_i > 0
+        #start with an item, search.resourcetype 2
+        if handle_response_json["response"]["docs"].first["search.resourcetype"].to_i == 2
+          doc = handle_response_json["response"]["docs"].first
+          generated_html += "<h2>#{doc['dc.title'].first}</h2><p>#{doc['author'].first}</p><p><a href=\"#{doc['dc.identifier.uri'].first}\">#{doc['dc.identifier.uri'].first}</a></p><p>#{doc['dc.description.abstract'].first}</p>"
         end
       end
+      
+      Rack::Response.new(generated_html,200,{'Content-Type' => 'text/html'})
     else
-      #nothing here, toss a 404
-      Rack::Response.new("Not found", 404)
+      Rack::Response.new("something is not right here...\n\n #{req.path}",404)
     end
   end
 end
