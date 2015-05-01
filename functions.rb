@@ -36,15 +36,15 @@ def generate_oembed(url,params)
   if params["container"]
     container = params["container"]
   end
-  generated_html = ""
+  generated_html = "<iframe src=\"#{$repository_url}/services/embed/handle/#{handle}\" width=\"#{maxwidth}\" height=\"#{maxheight}\"></iframe>"
   response = {
     "url" => "#{url}",
     "type" => "rich",
     "provider_name" => "#{$repository_desc}",
     "provider_url" => "#{$repository_url}",
     "html" => "#{generated_html}",
-    "width" => "#{maxwidth}",
-    "height" => "#{maxheight}"
+    "width" => maxwidth,
+    "height" => maxheight
   }.to_json
   # To do: build a list of useful and available metadata fields for inclusion in the embed
   # Optional: Farm out full metadata selection to a standalone advanced builder page; include styling?
