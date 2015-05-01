@@ -6,7 +6,7 @@ if (!window.jQuery) {
 
 function showWidget(url) {
 	// url here should be coming from the page that holds the embed button
-	$.getJSON("http://localhost:9292/dsoembed?url=" + url, function( data ) {
+	$.getJSON("http://dag.un.org/servics/oembed?url=" + url, function( data ) {
 		html_src = data["html"];
 		$('#widget').append('<textarea cols="50" rows="4">' + html_src + '</textarea>');
 		$('#widget').show();
