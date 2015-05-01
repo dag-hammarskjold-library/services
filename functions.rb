@@ -61,7 +61,12 @@ def unstyle(url,params)
   solr_response = JSON.parse(open(solr_url).read)
   style = ""
   html = ""
-  metadata = params["metadata"].split(",")
+  metadata = Array.new
+  if params["metadata"]
+    metadata = params["metadata"].split(",")
+  else
+    metadata = ["dc.title","undr.identifier.symbol","author","dc.description.abstract"]
+  end
   if solr_response["response"]["numFound"] == 1
     doc = solr_response["response"]["docs"].first
     metadata.each do |m|
