@@ -39,7 +39,7 @@ Clone the repo. Make sure you have Ruby, Bundler and Warble install. I am using 
 
 `warble war`
 
-Copy the resulting .war file to your Tomcat webapps directory. Your endpoints will be available at ${dspace.url}/dsoembed
+Copy the resulting .war file to your Tomcat webapps directory. Your endpoints will be available at ${dspace.url}/services/oembed, ${dspace.url}/services/embed, ${dspace.url}/services/symbol, and ${dspace.url}/services/resolve
 
 ### Rackup ###
 
@@ -49,4 +49,4 @@ Clone the repo. Make sure you have Ruby and Bundler installed.
 
 `rackup`
 
-Access it on port 9292. Your endpoints are at /services/oembed, /services/symbol and /services/resolve
+Access it on port 9292. Your endpoints are at /services/oembed, /services/embed, /services/symbol and /services/resolve
