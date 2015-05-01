@@ -26,26 +26,61 @@ def generate_oembed(url,params)
   #if solr_response["response"]["numFound"] == 1
   maxwidth = 300
   maxheight = 400
+  container = "iframe"
   if params["maxwidth"]
     maxwidth = params["maxwidth"]
   end
   if params["maxheight"]
     maxheight = params["maxheight"]
   end
+  if params["container"]
+    container = params["container"]
+  end
   generated_html = ""
   response = {
     "url" => "#{url}",
     "type" => "rich",
-    "provider_name" => "United Nations Dag Hammarskjöld Library",
-    "provider_url" => "http://dag.un.org",
+    "provider_name" => "#{$repository_desc}",
+    "provider_url" => "#{$repository_url}",
     "html" => "#{generated_html}",
     "width" => "#{maxwidth}",
     "height" => "#{maxheight}"
   }.to_json
+  # To do: build a list of useful and available metadata fields for inclusion in the embed
+  # Optional: Farm out full metadata selection to a standalone advanced builder page; include styling?
   return response
 end
 
-def unstyle(url)
-  html = ''
-  return html
+def unstyle(url,params)
+  #params["metadata"] must be a list of fully qualified metadata fields to include
+  #The question here is what risk there is in allowing arbitrary text. I think the risk of an exploit here is low, because I'm only going to 
+  # test against what I'm already pulling from Solr. None of these metadata fields get passed beyond this application. Still, it's worth 
+  # considering whether any improvements to security are necessary here.
+  handle = url.split(/\/handle\//).last.split("?").first
+  solr_url = $solr_prefix + "handle%3A#{handle}" + $solr_suffix
+  solr_response = JSON.parse(open(solr_url).read)
+  style = ""
+  html = ""
+  metadata = params["metadata"].split(",")
+  if solr_response["response"]["numFound"] == 1
+    doc = solr_response["response"]["docs"].first
+    metadata.each do |m|
+      if doc[m]
+        html += "<p id=\"#{m}\">#{doc[m].first}</p>"
+      end
+    end
+    return html
+  else
+    return nil
+  end
+end
+
+def whitelist_params(allowed,passed)
+  params = Hash.new
+  passed.keys.each do |k|
+    if allowed.include?(k)
+      params[k] = passed[k]
+    end
+  end
+  return params
 end

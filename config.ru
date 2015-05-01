@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require 'rack'
 require 'open-uri'
 require 'json'
@@ -10,6 +12,7 @@ $solr_prefix = "http://localhost:8080/solr/search/select?q="
 $solr_suffix = "&start=0&rows=10&wt=json&indent=true"
 
 $repository_url = "http://dag.un.org"
+$repository_desc = "United Nations Dag Hammarskjöld Library"
 $discovery_prefix = $repository_url + "/discover?scope=%2F&query="
 $discovery_suffix = "&submit"
 

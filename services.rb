@@ -1,5 +1,11 @@
 # encoding: utf-8
 
+# Notes: While this is perfectly functional, I think I would prefer a plugin-style approach, 
+# such that one can get the base application but enable and disable endpoints based on 
+# available plugins. That means the oEmbed provider and the symbol resolver would each be 
+# separate plugins, allowing users to omit the ones they don't want to use.
+# Worth investigating, but not my priority yet...
+
 class Services
   def self.call(env)
     req = Rack::Request.new(env)
@@ -8,6 +14,7 @@ class Services
     case req.path
     when /^\/services$/,/^\/services\/$/
       # /services or /services/ - Display services landing page
+      # To do: build this...
       Rack::Response.new("This is the landing page where we describe the available services.")
     when /^\/services\/symbol\/(.*)/
       # /services/symbol/* - Try to resolve the symbol to a URL and redirect to it
@@ -34,16 +41,11 @@ class Services
       # /services/oembed and /services/oembed/ - Populate an oEmbed response for embedding in external sites.
       if req.params["url"]
         if req.params["url"] =~ /(.*)\.un\.org\/handle\/(.*)/
+          url = req.params["url"]
           # Generate a response based on the url supplied
           # But first, let's whitelist some parameters because paranoia pays off
-          params_allowed = ["maxwidth","maxheight","container"]
-          params = Hash.new
-          req.params.keys.each do |k|
-            if params_allowed.include?(k)
-              params[k] = req.params[k]
-            end
-          end
-          response = generate_oembed(req.params["url"],params)
+          params = whitelist_params(["url","maxwidth","maxheight","container"],req.params)
+          response = generate_oembed(url,params)
           Rack::Response.new(response,200,{'Content-Type' => 'application/json'})
         else
           additional_info = "<p>The URL you supplied is not within the defined URL schemes accepted by this application.</p>"
@@ -55,11 +57,15 @@ class Services
       end
     when /^\/services\/embed\/handle\/11176\/(\d+)$/
       # /services/embed/handle/11176/* - Make a de-styled version of the content either for inclusion in an iframe or for DOM insertion via javascript
-      url = $repository_url + req.path.split(/\/embed\//).last
+      url = $repository_url + "/" + req.path.split(/\/embed\//).last
       # whitelist parameters
-      params_allowed = []
-      response = unstyle(url)
-      Rack::Response.new(response,200,{'Content-Type' => 'text/html'})
+      params = whitelist_params(["metadata"],req.params)
+      response = unstyle(url,params)
+      if response
+        Rack::Response.new(response,200,{'Content-Type' => 'text/html'})
+      else
+        Rack::Response.new($error_404 + "<p>#{url},#{params}</p>",404,{'Content-Type' => 'text/html'})
+      end
     else
       Rack::Response.new($error_404 + $go_home,404,{'Content-Type' => 'text/html'})
     end
