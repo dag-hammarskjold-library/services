@@ -119,6 +119,6 @@ def generate_response(params)
     :provider_url => $repository_url,
     :width => params["maxwidth"],
     :height => params["maxheight"],
-    :html => "<iframe src=\"#{$repository_url}/services/embed?object=#{object}&type=#{params["type"]}\"></iframe>"
+    :html => "<iframe src=\"#{$repository_url}/services/embed?object=#{object}&type=#{params["type"]}\" height=\"#{params["maxheight"]}\" width=\"#{params["maxwidth"]}\"></iframe>"
   }.to_json
 end
