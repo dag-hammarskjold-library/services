@@ -1,11 +1,14 @@
 # encoding: utf-8
 
 require 'rack'
+require 'nokogiri'
+require 'uri'
 require 'open-uri'
 require 'json'
 
+require 'resolve'
+require 'oembed'
 require 'services'
-require 'functions'
 
 # Configure these to match your DSpace environment
 $solr_prefix = "http://localhost:8080/solr/search/select?q="

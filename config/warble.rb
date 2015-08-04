@@ -14,7 +14,7 @@ Warbler::Config.new do |config|
   # config.dirs = %w(app config db lib log script vendor tmp)
 
   # Additional files/directories to include, above those in config.dirs
-  config.includes = FileList["services.rb","functions.rb"]
+  config.includes = FileList["services.rb","oembed.rb","resolve.rb"]
 
   # Additional files/directories to exclude
   # config.excludes = FileList["lib/tasks/*"]
