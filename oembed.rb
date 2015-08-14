@@ -110,6 +110,8 @@ def generate_response(params)
   elsif params["type"] == 'list'
     if decoded =~ /handle/
       object = URI::encode(decoded.split(/\/handle\//).last,/\W/)
+    elsif decoded =~ /discover/ && decoded !~ /\?/
+      object = URI::encode('discover')
     else
       object = URI::encode(decoded.split(/\?/).last,/\W/)
     end
