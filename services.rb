@@ -6,6 +6,10 @@ class Services
     
     req = Rack::Request.new(env)
     
+    if req.base_url != $repository_url
+      $repository_url = req.base_url
+    end
+    
     res = nil
     
     case req.path
