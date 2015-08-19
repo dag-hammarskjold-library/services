@@ -9,15 +9,16 @@ Presently there are two main endpoints:
 
 This endpoint is an oEmbed service provider for DSpace repositories. It does a number of things.
 
-1. Provides handle-based metadata simplification (so far, just for individual items) for use as an iframe source. For instance, http://service.url/dsoembed/embed/handle/12345/999 will output a simplified HTML representation of the DSpace object that lives at the specified handle.
-2. Generates embed code (iframe) to allow the contents of a DSpace handle to be embedded on external websites. The oEmbed API endpoint in this code is at http://service.url/dsoembed Note that url is a required parameter, so a minimally complete oEmbed call looks like http://service.url/dsoembed?url=http://google.com Further note that, since this is a project for use in the United Nations, there are some hard-coded UN-specific things in here. These should not be hard to change if you want to use this code for your own purposes, but right now making it more universal is not my priority.
+1. Provides handle-based metadata simplification (so far, just for individual items) for use as an iframe source. For instance, http://service.url/services/embed/handle/12345/999 will output a simplified HTML representation of the DSpace object that lives at the specified handle.
+2. Generates embed code (iframe) to allow the contents of a DSpace handle to be embedded on external websites. The oEmbed API endpoint in this code is at http://service.url/services/oembed Note that url is a required parameter, so a minimally complete oEmbed call looks like http://service.url/services/oembed?url=http://google.com Further note that, since this is a project for use in the United Nations, there are some hard-coded UN-specific things in here. These should not be hard to change if you want to use this code for your own purposes, but right now making it more universal is not my priority.
+3. For the item embed, you can select any metadata that is available for that item, but it must be included in a comma separated list of fully qualified metadata fields, such as dc.title and dc.description.abstract.
+4. Any set of search results can be embedded. Note that DSpace discovery does not always or immediately update the window.location with the search parameters (especially on initial load), you might have to click the search button explicitly to get proper embed results.
 
 What it doesn't do (yet):
 
 1. Provide XML responses via the oEmbed API. It's JSON only. I have no interest in changing this.
 2. Account for all of the potential error conditions it can encounter. Namely, it's missing responses for suggesting when something isn't implemented, and it could use better handling for 404 and 401 errors of which there are none and one, respectively.
-3. Allow additional parameters through the not-yet-implemented client-side builder. The endpoint provides some options, but not everything I foresee needing. Specifying metadata field inclusion would be a good start.
-4. Allow embedding of communities, collections, and search results. These are coming soon.
+3. Allow additional parameters through the not-yet-implemented client-side builder. The endpoint provides some options, but not everything I foresee needing. 
 
 ## Document Symbol Resolver/Redirector ##
 
