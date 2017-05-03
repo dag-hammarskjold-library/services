@@ -41,7 +41,7 @@ def unstyle_response(object,disposition)
       else
         url = $repository_url + "/handle/" + object + "?XML"
       end
-    elsif object =~ /scope/
+    elsif object =~ /scope/ || object =~ /filtertype/
       url = $repository_url + "/discover?" + object + "&XML"
     else
       if object =~ /\?/

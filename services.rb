@@ -60,7 +60,7 @@ class Services
       # possible params: object/query string, metadata (csv), object type; object and type are required
       if req.params["object"] && req.params["type"]
         #response = "<p>got #{req.url}</p>"
-        if req.params["object"] =~ /11176/ || req.params["object"] =~ /discover/ || req.params["object"] =~ /scope/
+        if req.params["object"] =~ /11176/ || req.params["object"] =~ /discover/ || req.params["object"] =~ /scope/ || req.params["object"] =~ /filtertype/
           response = unstyle_response(req.params["object"],req.params["type"])
         else
           # Nothing to see
